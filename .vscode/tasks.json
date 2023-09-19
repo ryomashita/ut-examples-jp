@@ -1,0 +1,87 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "cmake",
+            "label": "CMake: Configure",
+            "command": "configure",
+            "targets": [
+                "all"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "none",
+                "isDefault": true
+            },
+            "detail": "Default configure task."
+            // "Refer: https://github.com/microsoft/vscode-cmake-tools/blob/HEAD/docs/tasks.md"
+        },
+        {
+            "type": "cmake",
+            "label": "CMake: build",
+            "command": "build",
+            // "dependsOn": ["CMake: Configure"], // for saving build time
+            "targets": [
+                "all"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Default build task."
+            // "Refer: https://github.com/microsoft/vscode-cmake-tools/blob/HEAD/docs/tasks.md"
+        },
+        {
+            "type": "cmake",
+            "label": "Cmake: test",
+            "command": "test",
+            "dependsOn": [
+                "CMake: build"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "detail": "Default test task."
+            // "Refer: https://github.com/microsoft/vscode-cmake-tools/blob/HEAD/docs/tasks.md"
+        },
+        {
+            "type": "shell",
+            "label": "shell ctest",
+            "command": [
+                "cd ${workspaceFolder}/build && ctest"
+            ],
+            "dependsOn": [
+                "CMake: build"
+            ],
+            "detail": "run ctest in shell.",
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "C/C++ Check Format for Workspace",
+            // if would like to change file, delete `--dry-run` option.
+            "windows": {
+                "command": "clang-format -style=file --dry-run --Werror $(Get-ChildItem -Path $PWD/src,$PWD/test,$PWD/include -Recurse | Where Name -Match '.(?:cpp|hpp|h|cc|cxx)$' | Select-Object -ExpandProperty FullName)"
+            },
+            "linux": {
+                "command": "find src test include -regex '.*\\.\\(cpp\\|hpp\\|h\\|cc\\|cxx\\)' -exec clang-format -style=file --dry-run --Werror -i {} \\;"
+            },
+            "detail": "run clang-format --dry-run for workspaceFolder",
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "Generate GraphViz file",
+            "command": [
+                "cmake -S . -B build --graphviz=build/dot/graph.dot && dot -Kdot build/dot/graph.dot -Tpdf -o build/dot/graph.pdf"
+            ],
+            "dependsOn": [],
+            "detail": "generate image file showing the dependencies between targets.",
+            "problemMatcher": []
+            // ref: https://cmake.org/cmake/help/latest/module/CMakeGraphVizOptions.html
+        }
+    ]
+}

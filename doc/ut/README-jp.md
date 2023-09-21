@@ -12,6 +12,7 @@ https://github.com/boost-ext/ut/blob/master/README.md
 | [Motivation](#motivation) | [Quick Start](#quick-start) | [Overview](#overview) | [Tutorial](#tutorial) | [Examples](#examples) | [User Guide](#user-guide) | [FAQ](#faq) | [Benchmarks](#benchmarks) |
 
 <details open><summary>C++ <b>single header/single module, macro-free</b> μ(micro)/Unit Testing Framework</summary>
+
 ```cpp
 #include <boost/ut.hpp> // import boost.ut;
 
@@ -27,6 +28,7 @@ int main() {
   };
 }
 ```
+
 ```sh
 Running "sum"...
   sum.cpp:11:FAILED [(3 > 0 and 41 == 42)]
@@ -41,4 +43,9 @@ asserts: 3 | 2 passed | 1 failed
 <a name="motivation"></a>
 <details open><summary>Motivation</summary>
 <p>
+テストはソフトウェア開発において非常に重要な要素ですが、C++にはすぐに使える優れたテスト機能がありません。
+このことにより、開発のテストエクスペリエンスが低下したり、テストやカバレッジが不足することが一般的によく発生します。
 
+> テストコードは成果物に含まれる必要があります！
+
+さらに、[テスト駆動開発 (TDD)](https://ja.wikipedia.org/wiki/テスト駆動開発)/[ビヘイビア駆動開発 (BDD)](https://ja.wikipedia.org/wiki/ビヘイビア駆動開発) などの十分に確立されたテスト手法も、同様の理由で実施されないことがよくあります。

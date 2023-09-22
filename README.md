@@ -1,2 +1,2 @@
 # ut-examples-jp
-boost-ext/utのサンプルコード集
+[boost-ext/ut](https://github.com/boost-ext/ut)に掲載されているリファレンスを和訳・整理するリポジトリです。

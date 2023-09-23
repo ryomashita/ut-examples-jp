@@ -6,10 +6,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # clang-tidy: export compile-setting to compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_CLANG_TIDY
-    clang-tidy
-    -checks=*
-    -header-filter=${CMAKE_SOURCE_DIR}/include/
-)
 
 add_subdirectory(examples)

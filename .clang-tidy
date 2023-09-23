@@ -23,9 +23,13 @@ readability-*,\
 -*named-parameter,\
 -*uppercase-literal-suffix,\
 "
+# WarningsAsErrors(-warnings-as-errors):
+#   - Upgrades warnings to errors. Same format as Checks.
 WarningsAsErrors: ''
-HeaderFilterRegex: '.*'
-AnalyzeTemporaryDtors: false
+# HeaderFilterRegex(-header-filter):
+#   - display errors from all non-system headers
+HeaderFilterRegex: ''
+# FormatStyle(--format-style):
+#   - Style for formatting code.(none|file|llvm|google|...)
 FormatStyle:     file
-User:            clausklein
 ...

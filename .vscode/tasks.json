@@ -82,6 +82,16 @@
             "detail": "generate image file showing the dependencies between targets.",
             "problemMatcher": []
             // ref: https://cmake.org/cmake/help/latest/module/CMakeGraphVizOptions.html
+        },
+        {
+            "type": "shell",
+            "label": "Clang-Tidy: run",
+            "command": [
+                "clang-tidy -p build ${workspaceFolder}/examples/*.cpp"
+            ],
+            "dependsOn": [],
+            "detail": "run clang-tidy for workspaceFolder",
+            "problemMatcher": []
         }
     ]
 }

@@ -343,4 +343,69 @@ tests:   0 | 2 failed
 asserts: 0 | 0 passed | 2 failed
 ```
 
-> I use `std::expected`, can I stream its `error()` upon failure?
+> 私は [std::expected](https://cpprefjp.github.io/reference/expected/expected.html) を使っているのですが、 失敗時に `error()` をストリームに加えられますか？
+> はい、 `std::expected` の `error()` は値がない場合のみ呼び出すことができるため、遅延評価が必要です。
+
+```cpp
+"lazy log"_test = [] {
+  std::expected<bool, std::string> e = std::unexpected("lazy evaluated");
+  expect(e.has_value()) << [&] { return e.error(); } << fatal;
+  expect(e.value() == true);
+};
+
+```
+
+```
+Running test "lazy log"... FAILED
+in: main.cpp:12 - test condition:  [false]
+
+ lazy evaluated
+===============================================================================
+tests:   1 | 2 failed
+asserts: 0 | 0 passed | 2 failed
+```
+> https://godbolt.org/z/v2PDuU
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;Step 2: Group it...</summary>
+<p>
+
+> アサーションは素晴らしいです。しかし、テストをグループ化する方法はありますか？
+> `Test cases` はそのための方法です！これにより同じ機能に対するexpectを１つにまとめることができます。
+
+```cpp
+"hello world"_test = [] { };
+test("hello world") = [] {}; // alternatively
+```
+
+```
+All tests passed (0 asserts in 1 tests)
+```
+
+> https://godbolt.org/z/Bh-EmY
+
+> `asserts` ではなく `tests` がカウントされていることに注目してください。
+
+> それでは、最初のエンドツーエンドのテストケースを書いてみましょう。
+```cpp
+int main() {
+  "hello world"_test = [] {
+    int i = 43;
+    expect(42_i == i);
+  };
+}
+```
+
+```
+Running "hello world"...
+  main.cpp:8:FAILED [42 == 43]
+FAILED
+===============================================================================
+tests:   1 | 1 failed
+asserts: 1 | 0 passed | 1 failed
+```
+
+> https://godbolt.org/z/Y43mXz
+
+> 👍 We are done here!
+
+

@@ -406,6 +406,203 @@ asserts: 1 | 0 passed | 1 failed
 
 > https://godbolt.org/z/Y43mXz
 
-> 👍 We are done here!
+> 👍 これで完了です！
+
+> 私はテストをネストして、setup/tear-downを共有したいと考えています。
+> ラムダを使い `tests/sections` を表現すれば、簡単に実現できます。
+> 次の例を見てみましょう。
+
+```cpp
+int main() {
+  "[vector]"_test = [] {
+    std::vector<int> v(5);
+
+    expect((5_ul == std::size(v)) >> fatal);
+
+    should("resize bigger") = [v] { // or "resize bigger"_test
+      mut(v).resize(10);
+      expect(10_ul == std::size(v));
+    };
+
+    expect((5_ul == std::size(v)) >> fatal);
+
+    should("resize smaller") = [=]() mutable { // or "resize smaller"_test
+      v.resize(0);
+      expect(0_ul == std::size(v));
+    };
+  }
+}
+```
+
+```
+All tests passed (4 asserts in 1 tests)
+```
+
+> https://godbolt.org/z/XWAdYt
+
+> 素晴らしい！簡単ですね。しかし、私は `BDD` (Behavior Driven Development; 振る舞い駆動開発) を好んでいます。
+> そういったサポートはありますか？
+> はい！ `BDD`構文を使った例を見てみましょう。
+
+```cpp
+int main() {
+  "vector"_test = [] {
+    given("I have a vector") = [] {
+      std::vector<int> v(5);
+      expect((5_ul == std::size(v)) >> fatal);
+
+      when("I resize bigger") = [=] {
+        mut(v).resize(10);
+
+        then("The size should increase") = [=] {
+          expect(10_ul == std::size(v));
+        };
+      };
+    };
+  };
+}
+```
+
+```
+All tests passed (2 asserts in 1 tests)
+```
+
+> https://godbolt.org/z/dnvxsE
+
+> 更に、 `feature/scenario` エイリアスも使用できます。
+
+```cpp
+int main() {
+  feature("vector") = [] {
+    scenario("size") = [] {
+      given("I have a vector") = [] {
+        std::vector<int> v(5);
+        expect((5_ul == std::size(v)) >> fatal);
+
+        when("I resize bigger") = [=] {
+          mut(v).resize(10);
+
+          then("The size should increase") = [=] {
+            expect(10_ul == std::size(v));
+          };
+        };
+      };
+    };
+  };
+}
+```
+
+```
+All tests passed (2 asserts in 1 tests)
+```
+
+> https://godbolt.org/z/T4cWss
+
+> `Gherkin` を使うことはできますか？
+> はい、もちろんです。 `Gherkin` 仕様を使って、サンプルコードを書き直してみましょう。
+
+```cpp
+int main() {
+  bdd::gherkin::steps steps = [](auto& steps) {
+    steps.feature("Vector") = [&] {
+      steps.scenario("*") = [&] {
+        steps.given("I have a vector") = [&] {
+          std::vector<int> v(5);
+          expect((5_ul == std::size(v)) >> fatal);
+
+          steps.when("I resize bigger") = [&] {
+            v.resize(10);
+          };
+
+          steps.then("The size should increase") = [&] {
+            expect(10_ul == std::size(v));
+          };
+        };
+      };
+    };
+  };
+
+  "Vector"_test = steps |
+    R"(
+      Feature: Vector
+        Scenario: Resize
+          Given I have a vector
+           When I resize bigger
+           Then The size should increase
+    )";
+}
+```
+
+```
+All tests passed (2 asserts in 1 tests)
+```
+
+> https://godbolt.org/z/jb1d8P
+
+> これは良いですね！しかし、私は `Spec` (Specification; 仕様) を好んでいます。
+
+```cpp
+int main() {
+  describe("vector") = [] {
+    std::vector<int> v(5);
+    expect((5_ul == std::size(v)) >> fatal);
+
+    it("should resize bigger") = [v] {
+      mut(v).resize(10);
+      expect(10_ul == std::size(v));
+    };
+  };
+}
+```
+
+```
+All tests passed (2 asserts in 1 tests)
+```
+
+> https://godbolt.org/z/6jKKzT
+
+> 素晴らしいです。しかし、DRY (Don't Repeat Yourself) を実現するために、同じテストを異なる引数や型で呼び出すにはどうすればいいでしょうか？
+> パラメタ化テストを使ってみましょう。
+
+```cpp
+int main() {
+  for (auto i : std::vector{1, 2, 3}) {
+    test("parameterized " + std::to_string(i)) = [i] { // 3 tests
+      expect(that % i > 0); // 3 asserts
+    };
+  }
+}
+```
+
+```
+All tests passed (3 asserts in 3 tests)
+```
+
+> https://godbolt.org/z/Utnd6X
+
+> まさにこれです😮！
+> もしくは、便利なテスト構文も用意されています👍。
+
+```cpp
+int main() {
+  "args"_test = [](const auto& arg) {
+    expect(arg > 0_i) << "all values greater than 0";
+  } | std::vector{1, 2, 3};
+}
+```
+
+```
+All tests passed (3 asserts in 3 tests)
+```
+
+> https://godbolt.org/z/6FHtpq
+
+> 更なる詳細は [Examples](#examples) を参照してください。
+
+</p>
+</details>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;Step 3: Scale it...</summary>
+<p>
 
 

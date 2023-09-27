@@ -18,6 +18,7 @@ int main() {
     expect(that % 1 == 2);            // Matcher syntax (`1_i == 2`と同等)
     expect(eq(1, 2));                 // eq/neq/gt/lt/ge/le
     expect(42l == 42_l and 1 == 2_i); // compound expression (and/or/not)
+    expect(42.10000001 == 42.1_d) << "epsilon=0.1"; // floating point comparison
 
     /* カスタムメッセージ と fatal動作 */
     using namespace boost::ut;
@@ -25,6 +26,17 @@ int main() {
     expect((1 == 1_i) >> fatal);                           // fatal assertion
     expect(1_i == 2); // If the previous line fails, not executed
     expect(1 == 1_i) << "fatal assertion" << fatal;
+
+    /* ログの出力 */
+    /* std::formatは開発環境で未対応のためコメントアウト */
+    // #include <format>
+    "logging"_test = [] {
+      // log("\npre  {} == {}\n", 42, 43);
+      log << "pre";
+      expect(42_i == 43) << "message on failure";
+      // log("\npost {} == {} -> {}\n", 42, 43, 42 == 43);
+      log << "post";
+    };
 
     /* std::expected (C++23) の使用方法 */
     /* 開発環境下で未対応のため、コメントアウト */
@@ -72,11 +84,40 @@ int main() {
         expect(that % i > 0);                            // 3 asserts
       };
     }
+    "types with type name"_test = []<class T>() {
+      expect(std::is_unsigned_v<T>)
+          << reflection::type_name<T>() << "is unsigned";
+    } | std::tuple<unsigned int, float>{};
 
     /* パラメタの後置 */
     "args"_test = [](const auto &arg) {
       expect(arg > 0_i) << "all values greater than 0";
     } | std::vector{1, 2, 3};
+
+    /* テストのスキップ */
+    skip / test("don't run function") = [] {
+      expect(42_i == 43) << "should not fire!";
+    };
+
+    /* タグの付与 */
+    tag("nightly") / tag("slow") /
+        "performance"_test = [] { expect(42_i == 42); };
+    /* タグによる実行フィルタ */
+    cfg<override> = {.filter = "tag", .tag = {"execute"}};
+    tag("not executed") / "tag"_test = [] { expect(43_i == 42); };
+  }
+  {
+    namespace ut = boost::ut;
+    /* Test Suites (テストケースのグループ) の登録 */
+    ut::suite errors = [] {
+      using namespace ut;
+
+      "exception"_test = [] {
+        expect(throws([] { throw 0; })) << "throws any exception";
+      };
+
+      "failure"_test = [] { expect(nothrow([] {})); };
+    };
   }
   {
     using namespace boost::ut;
@@ -92,6 +133,9 @@ int main() {
 
           then("The size should increase") = [=] {
             expect(10_ul == std::size(v));
+          };
+          then("The size should increase") = [=] {
+            expect(std::size(v) == 10_ul);
           };
         };
       };

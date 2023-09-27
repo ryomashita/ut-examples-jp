@@ -605,4 +605,452 @@ All tests passed (3 asserts in 3 tests)
 <details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;Step 3: Scale it...</summary>
 <p>
 
+> 分かった。でも私もプロジェクトはもっと複雑です。スケールするのでしょうか？
+> `Test suites` を使えば可能です。 翻訳単位で `suite` を使用すると、
+> 内部で定義された `tests` が自動で登録されます。
+
+```cpp
+suite errors = [] {
+  "exception"_test = [] {
+    expect(throws([] { throw 0; })) << "throws any exception";
+  };
+
+  "failure"_test = [] {
+    expect(aborts([] { assert(false); }));
+  };
+};
+
+int main() { }
+```
+
+```
+All tests passed (2 asserts in 2 tests)
+```
+
+> https://godbolt.org/z/_ccGwZ
+
+---
+
+> What's next?
+> * [Examples](#examples)
+> * [User-Guide](#user-guide)
+
+</p>
+</details>
+
+</p>
+</details>
+
+<a name="examples"></a>
+<details open><summary>Examples</summary>
+<p>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;Assertions</summary>
+<p>
+
+
+```cpp
+// operators
+expect(0_i == sum());
+expect(2_i != sum(1, 2));
+expect(sum(1) >= 0_i);
+expect(sum(1) <= 1_i);
+```
+
+```cpp
+// message
+expect(3_i == sum(1, 2)) << "wrong sum";
+```
+
+```cpp
+// expressions
+expect(0_i == sum() and 42_i == sum(40, 2));
+expect(0_i == sum() or 1_i == sum()) << "compound";
+```
+
+```cpp
+// matchers
+expect(that % 0 == sum());
+expect(that % 42 == sum(40, 2) and that % (1 + 2) == sum(1, 2));
+expect(that % 1 != 2 or 2_i > 3);
+```
+
+```cpp
+// eq/neq/gt/ge/lt/le
+expect(eq(42, sum(40, 2)));
+expect(neq(1, 2));
+expect(eq(sum(1), 1) and neq(sum(1, 2), 2));
+expect(eq(1, 1) and that % 1 == 1 and 1_i == 1);
+```
+
+```cpp
+// floating points
+expect(42.1_d == 42.101) << "epsilon=0.1";
+expect(42.10_d == 42.101) << "epsilon=0.01";
+expect(42.10000001 == 42.1_d) << "epsilon=0.1";
+```
+
+```cpp
+// constant
+constexpr auto compile_time_v = 42;
+auto run_time_v = 99;
+expect(constant<42_i == compile_time_v> and run_time_v == 99_i);
+```
+
+```cpp
+// failure
+expect(1_i == 2) << "should fail";
+expect(sum() == 1_i or 2_i == sum()) << "sum?";
+```
+
+```
+assertions.cpp:53:FAILED [1 == 2] should fail
+assertions.cpp:54:FAILED [(0 == 1 or 2 == 0)] sum?
+===============================================================================
+tests:   0  | 0 failed
+asserts: 20 | 18 passed | 2 failed
+```
+
+> https://godbolt.org/z/E1c7G5
+
+</p>
+</details>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;Tests</summary>
+<p>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Run/Skip/Tag</summary>
+<p>
+
+```cpp
+"run UDL"_test = [] {
+  expect(42_i == 42);
+};
+
+skip / "don't run UDL"_test = [] {
+  expect(42_i == 43) << "should not fire!";
+};
+```
+
+```
+All tests passed (1 asserts in 1 tests)
+1 tests skipped
+```
+
+```cpp
+test("run function") = [] {
+  expect(42_i == 42);
+};
+
+skip / test("don't run function") = [] {
+  expect(42_i == 43) << "should not fire!";
+};
+```
+
+```
+All tests passed (1 asserts in 1 tests)
+1 tests skipped
+```
+
+```cpp
+tag("nightly") / tag("slow") /
+"performance"_test= [] {
+  expect(42_i == 42);
+};
+
+tag("slow") /
+"run slowly"_test= [] {
+  expect(42_i == 43) << "should not fire!";
+};
+```
+
+```
+cfg<override> = {.tag = {"nightly"}};
+```
+
+```
+All tests passed (1 asserts in 1 tests)
+1 tests skipped
+```
+
+> https://godbolt.org/z/X3_kG4
+
+</p>
+</details>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sections</summary>
+<p>
+
+```cpp
+"[vector]"_test = [] {
+  std::vector<int> v(5);
+
+  expect((5_ul == std::size(v)) >> fatal);
+
+  should("resize bigger") = [=] { // or "resize bigger"_test
+    mut(v).resize(10);
+    expect(10_ul == std::size(v));
+  };
+
+  expect((5_ul == std::size(v)) >> fatal);
+
+  should("resize smaller") = [=]() mutable { // or "resize smaller"_test
+    v.resize(0);
+    expect(0_ul == std::size(v));
+  };
+};
+```
+
+```
+All tests passed (4 asserts in 1 tests)
+```
+
+> https://godbolt.org/z/cE91bj
+
+</p>
+</details>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Behavior Driven Development (BDD)</summary>
+<p>
+
+```cpp
+"Scenario"_test = [] {
+  given("I have...") = [] {
+    when("I run...") = [] {
+      then("I expect...") = [] { expect(1_i == 1); };
+      then("I expect...") = [] { expect(1 == 1_i); };
+    };
+  };
+};
+```
+
+```
+All tests passed (2 asserts in 1 tests)
+```
+
+> https://godbolt.org/z/mNBySr
+
+</p>
+</details>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Gherkin</summary>
+<p>
+
+```cpp
+int main() {
+  bdd::gherkin::steps steps = [](auto& steps) {
+    steps.feature("*") = [&] {
+      steps.scenario("*") = [&] {
+        steps.given("I have a number {value}") = [&](int value) {
+          auto number = value;
+          steps.when("I add {value} to it") = [&](int value) {
+            number += value;
+          };
+          steps.then("I expect number to be {value}") = [&](int value) {
+            expect(that % number == value);
+          };
+        };
+      };
+    };
+  };
+
+  "Gherkin"_test = steps |
+    R"(
+      Feature: Number
+        Scenario: Addition
+          Given I have a number 40
+           When I add 2 to it
+           Then I expect number to be 42
+    )";
+}
+```
+
+```
+All tests passed (1 asserts in 1 tests)
+```
+
+> https://godbolt.org/z/BP3hyt
+
+</p>
+</details>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spec</summary>
+<p>
+
+```cpp
+int main() {
+  describe("equality") = [] {
+    it("should be equal")     = [] { expect(0_i == 0); };
+    it("should not be equal") = [] { expect(1_i != 0); };
+  };
+}
+```
+
+```
+All tests passed (2 asserts in 1 tests)
+```
+
+> https://godbolt.org/z/BXYJ3a
+
+</p>
+</details>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Parameterized</summary>
+<p>
+
+```cpp
+for (auto i : std::vector{1, 2, 3}) {
+  test("parameterized " + std::to_string(i)) = [i] {
+    expect(that % i > 0);
+  };
+}
+
+"args"_test =
+   [](auto arg) {
+      expect(arg >= 1_i);
+    }
+  | std::vector{1, 2, 3};
+
+"types"_test =
+    []<class T> {
+      expect(std::is_integral_v<T>) << "all types are integrals";
+    }
+  | std::tuple<bool, int>{};
+
+"args and types"_test =
+    []<class TArg>(TArg arg) {
+      expect(std::is_integral_v<TArg> >> fatal);
+      expect(42_i == arg or "is true"_b == arg);
+      expect(type<TArg> == type<int> or type<TArg> == type<bool>);
+    }
+  | std::tuple{true, 42};
+```
+
+```
+All tests passed (14 asserts in 10 tests)
+```
+
+> https://godbolt.org/z/4xGGdo
+
+> そしてテストが失敗した特定のタイプを知りたいと思うことがあります。
+> その場合は、 `reflection::type_name<T>()` を使用できます。
+
+```cpp
+"types with type name"_test =
+    []<class T>() {
+      expect(std::is_unsigned_v<T>) << reflection::type_name<T>() << "is unsigned";
+    }
+  | std::tuple<unsigned int, float>{};
+```
+
+```
+Running "types with type name"...PASSED
+Running "types with type name"...
+  <source>:10:FAILED [false] float is unsigned
+FAILED
+```
+
+> https://godbolt.org/z/MEnGnbTY4
+
+</p>
+</details>
+
+
+</p>
+</details>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;Suites</summary>
+<p>
+
+```cpp
+namespace ut = boost::ut;
+
+ut::suite errors = [] {
+  using namespace ut;
+
+  "throws"_test = [] {
+    expect(throws([] { throw 0; }));
+  };
+
+  "doesn't throw"_test = [] {
+    expect(nothrow([]{}));
+  };
+};
+
+int main() { }
+```
+
+```
+All tests passed (2 asserts in 2 tests)
+```
+
+> https://godbolt.org/z/CFbTP9
+
+</p>
+</details>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;Misc</summary>
+<p>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Logging using streams</summary>
+<p>
+
+```cpp
+"logging"_test = [] {
+  log << "pre";
+  expect(42_i == 43) << "message on failure";
+  log << "post";
+};
+```
+
+```
+Running "logging"...
+pre
+  logging.cpp:8:FAILED [42 == 43] message on failure
+post
+FAILED
+
+===============================================================================
+
+tests:   1 | 1 failed
+asserts: 1 | 0 passed | 1 failed
+```
+
+> https://godbolt.org/z/26fPSY
+
+</p>
+</details>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Logging using formatting</summary>
+<p>
+This requires using C++20 with a standard library with std::format support.
+
+```cpp
+"logging"_test = [] {
+  log("\npre  {} == {}\n", 42, 43);
+  expect(42_i == 43) << "message on failure";
+  log("\npost {} == {} -> {}\n", 42, 43, 42 == 43);
+};
+```
+
+```
+Running "logging"...
+pre  42 == 43
+  logging.cpp:8:FAILED [42 == 43] message on failure
+post 42 == 43 -> false
+FAILED
+
+===============================================================================
+
+tests:   1 | 1 failed
+asserts: 1 | 0 passed | 1 failed
+```
+
+> https://godbolt.org/z/26fPSY
+
+</p>
+</details>
+
+<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Matchers</summary>
+<p>
 

@@ -49,6 +49,18 @@ int main() {
     // };
   }
   {
+    /* 例外のテスト */
+    #include <cassert>
+    using namespace boost::ut;
+    "exceptions/aborts"_test = [] {
+      expect(throws<std::runtime_error>([] { throw std::runtime_error{""}; }))
+        << "throws runtime_error";
+      expect(throws([] { throw 0; })) << "throws any exception";
+      expect(nothrow([]{})) << "doesn't throw";
+      expect(aborts([] { assert(false); }));
+    };
+  }
+  {
     /* expectを省略した簡易表記法 */
     using namespace boost::ut::literals;
     using namespace boost::ut::operators::terse;

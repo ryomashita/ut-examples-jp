@@ -4,6 +4,8 @@
 #include <boost/ut.hpp>
 // import boost.ut
 
+#include <cassert> // for assert()
+
 int main() {
   {
     // first assertion
@@ -50,7 +52,6 @@ int main() {
   }
   {
     /* 例外のテスト */
-    #include <cassert>
     using namespace boost::ut;
     "exceptions/aborts"_test = [] {
       expect(throws<std::runtime_error>([] { throw std::runtime_error{""}; }))
